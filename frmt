@@ -1,0 +1,44 @@
+#!/bin/sh
+# program: format
+# purpose: shows first record in file, and positions
+
+gawk 'BEGIN {
+    if (ARGC==2) rec=1
+    if (ARGC==3) rec=substr(ARGV[2],3)+1
+
+    # largest line that can be printed on the screen
+    ncol_scr = 10*int('$(tput cols)'/10)
+}
+
+{
+    # do for correct record
+    if (NR==rec) {
+
+        # length of record
+        lngt=length($0)
+
+        # determine number of columns
+        ncol= lngt < ncol_scr ? 10*ceil(lngt/10) : ncol_scr
+
+        # how many lines needed to show entire record 
+        lines=ceil(lngt/ncol)
+
+	printf("\n")
+	for (i=1; i<=lines; i++) {
+	    for (j=1; j<=(ncol/10); j++) {
+	        printf("%10s",(i-1)*(ncol/10)+j)
+	    }
+	    printf("\n")
+	    for (j=1; j<=(ncol/10); j++) {
+	        printf("....5....0")
+	    }
+	    printf("\n")
+	    printf(substr($0,(i-1)*ncol+1,ncol))
+	    printf("\n\n")
+        }
+    exit
+    }
+}
+function ceil(x, y) {
+  y=int(x); return(x>y?y+1:y)
+}' ${1} k=${2}

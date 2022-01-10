@@ -1,0 +1,49 @@
+#! /bin/bash
+#
+#  program    : pedtree
+#  purpose    : search for parents, grand parents etc.
+#               pedigree file should be sorted so that progeny appears
+#               before their parents.
+#  author     : Arnoud van der Lugt, NRS
+#  date       : 28-11-1994
+#  usage      : pedtree animal_file pedigree_file
+#  uses awk
+#
+
+# check for input parameters
+
+if [ $# -lt 2 ]
+then
+  echo usage: ${0##*/} animal_file pedigree_file
+  exit 1
+fi
+
+if [ ! -r $1 ]
+then
+  echo ${0##*/}: animal file $1 does not exist or is not readable
+  exit 1
+fi
+
+if [ ! -r $2 ]
+then
+  echo ${0##*/}: pedigree file $2 does not exist or is not readable
+  exit 1
+fi
+ 
+tac $2 | awk '
+BEGIN   { 
+          while ( getline <"'$1'"  > 0 )  {
+            animal[$1] = 1
+	  }
+        }
+NF >= 3 { 
+          if ( $1 in animal ) {
+            kol4=""
+            if(NF < 4) {kol4="0"}
+            print $0, kol4
+	    delete animal[$1]
+	    animal[$2] = 1
+	    animal[$3] = 1
+          }
+        }
+' | tac

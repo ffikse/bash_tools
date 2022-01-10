@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+#  program    : histo
+#  purpose    : counts frequencies of levels of a variable/field 
+#  author     : Freddy Fikse
+#  usage      : histo -c column input_file
+#             : histo -i input_file -c column 
+#  uses gawk
+#  revision history
+#               28-12-1996 : original code
+#               25 jul 1997: modified handling of options
+#
+
+# check for input parameters
+set -- `getopt i:c: $*`
+if [ $? -ne 0 ]
+then
+  echo usage: ${0##*/} -c column [-i input_file] input_file
+  exit 1
+fi
+
+for i in $*
+do
+    case $i in
+        -i) INFILE=$2; shift 2;;
+        -c) CARG=$2; shift 2;;
+        --) shift; break;;
+    esac
+done
+
+if [ ! -r ${INFILE:=$*} ]
+then
+  echo ${0##*/}: file $INFILE does not exist or is not readable
+  exit 2
+fi
+
+if [ ! $CARG ]
+then
+  echo ${0##*/}: not enough arguments
+  echo usage: ${0##*/} -c column [-i input_file] input_file
+  exit 2
+fi
+
+gawk -v k=$CARG '
+BEGIN {
+     column=k
+}
+
+NF >= 1 { 
+	    c[$column]++
+        }
+
+END {
+    for (level in c)
+	print level,c[level]
+}
+' $INFILE 

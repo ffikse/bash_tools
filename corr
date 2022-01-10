@@ -1,0 +1,30 @@
+awk '
+BEGIN {
+    sumx=0
+    sumy=0
+    ssqx=0
+    ssqy=0
+    sxy=0
+    c=0
+}
+
+{
+    sumx+=$1
+    sumy+=$2
+    ssqx+=$1*$1
+    ssqy+=$2*$2
+    sxy+=$1*$2
+    c++
+}
+
+END {
+    if (c!=0) {
+        varx=(ssqx-sumx*sumx/c)/(c-1)
+        vary=(ssqy-sumy*sumy/c)/(c-1)
+        print "N   : ",c
+        print "Mean: ",sumx/c,sumy/c
+        print "Var : ",varx,vary
+        print "Std : ",sqrt(varx),sqrt(vary)
+        print "Corr: ",((sxy-sumx*sumy/c)/(c-1))/sqrt(varx*vary)
+    }
+}'

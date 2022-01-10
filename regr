@@ -1,0 +1,83 @@
+#!/bin/bash
+# program : regr
+# purpose : linear regress of y on x
+# execute : regr [-x Xcolumn] [-y Ycolumn] [-i input_file] [-w label] input_file
+# author  : Freddy Fikse, Interbull Centre
+# comments: INFILE set without -i option can contain more than one value
+#              in that case the test operation complains
+#           test whether $CARG is a number could be included
+# revision history:
+#           a while ago: original code
+#           13 mar 1998: added getopt part
+#            9 feb 1998: add -w option
+
+# check for input parameters
+set -- `getopt i:w:x:y: $*`
+if [ $? -ne 0 ]
+then
+  echo usage: ${0##*/} [-x Xcolumn] [-Y Ycolumn] [-i input_file] [-w label] input_file
+  exit 1
+fi
+
+for i in $*
+do
+    case $i in
+        -i) INFILE=$2; shift 2;;
+        -w) LABEL=$2; shift 2;;
+        -x) XARG=$2; shift 2;;
+        -y) YARG=$2; shift 2;;
+        --) shift; break;;
+    esac
+done
+
+if [ ! -r ${INFILE:=$*} ]
+then
+  echo ${0##*/}: file $INFILE does not exist or is not readable
+  exit 2
+fi
+
+if [ ! ${CARG} ]
+then
+    CARG=1
+fi
+
+awk -v colx=${XARG:=1} -v coly=${YARG:=2} -v label=${LABEL} '
+BEGIN {
+
+    # some initialization
+    sumx=0
+    sumy=0
+    ssqx=0
+    ssqy=0
+    sxy=0
+    c=0
+}
+
+{
+    sumx+=$colx
+    sumy+=$coly
+    ssqx+=$colx*$colx
+    ssqy+=$coly*$coly
+    sxy+=$colx*$coly
+    c++
+}
+
+END {
+   if (c>1) {
+
+      # compute ...
+      varx=(ssqx-sumx*sumx/c)/(c-1)
+      vary=(ssqy-sumy*sumy/c)/(c-1)
+      slope=(sxy-sumx*sumy/c)/(ssqx-sumx*sumx/c)
+      inter=sumy/c - slope*sumx/c
+      corr=((sxy-sumx*sumy/c)/(c-1))/sqrt(varx*vary)
+
+      if( label == "" ) {
+        # ... and print
+        printf ("Intercept: %8.4f        Slope: %8.6f        Correlation: %8.4f\n", inter, slope, corr)
+      }
+      else {
+        printf ("%10s  Intercept: %8.2f      Slope: %8.6f      Correlation: %8.4f\n", label, inter, slope, corr)
+      }
+   }
+}' ${INFILE}

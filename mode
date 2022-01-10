@@ -1,0 +1,52 @@
+#!/usr/bin/perl -I /home/freddy/Software/CPAN/
+
+use Statistics::Descriptive;
+
+while( $line=<> ) {
+  chomp $line;
+  @fields=split /\s+/, $line;
+
+  # determine trait, and count
+  $t=$fields[0];
+
+  # sum for each field
+  foreach $i (1..$#fields) {
+    $var{$t}[$i] = Statistics::Descriptive::Full->new() if (!defined( $var{$t}[$i] ) );
+
+    $var{$t}[$i]->add_data( $fields[$i] );
+
+  }
+}
+
+foreach $t (sort keys %var) {
+
+  printf "%s avg %2d", $t, $var{$t}[1]->count();
+  for $i (1..$#{ $var{$t} } ) {
+    printf " %9.5f", $var{$t}[$i]->mean()
+  }
+  print "\n";
+
+  printf "%s mod %2d", $t, $var{$t}[1]->count();
+  for $i (1..$#{ $var{$t} } ) {
+    printf " %9.5f", $var{$t}[$i]->mode()
+  }
+  print "\n";
+
+  printf "%s std %2d", $t, $var{$t}[1]->count();
+  for $i (1..$#{ $var{$t} } ) {
+    printf " %9.5f", $var{$t}[$i]->standard_deviation();
+  }
+  print "\n";
+
+  printf "%s min %2d", $t, $var{$t}[1]->count();
+  for $i (1..$#{ $var{$t} } ) {
+    printf " %9.5f", $var{$t}[$i]->min();
+  }
+  print "\n";
+
+  printf "%s max %2d", $t, $var{$t}[1]->count();
+  for $i (1..$#{ $var{$t} } ) {
+    printf " %9.5f", $var{$t}[$i]->max();
+  }
+  print "\n";
+}
